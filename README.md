@@ -1,30 +1,25 @@
-placed under CC-BY
+# Project: 
+https://www.instructables.com/Ez-Arduino-12-DOF-Quadruped-Robot-Robot-Dog-Lassie/
 
-www.maestrostudio.org
 
 # Components:
 
-    1x Esp32 or an Arduino compatible board.
+    1x [HuaDuino](https://www.amazon.com/dp/B08K4J1ZQD?ref=myi_title_dp&tag=thingiverse09-20)
     
-    1X Sipeed M1 Dock - K210 Development Board
+    1X a single 3.7V 18650 lithium ion battery with XH2.54 connector.
 
-    1x PCA9685 16-Channel 12-bit PWM Servo Motor Driver I2C Module
+    12 x Tower Pro MG90s or compatible servos.
     
-    1x 7805 TO-2205V - 1.5A Linear Voltage Regulator
+    a 5V buzzer
     
-    1x Li-Po Battery 7.4V 2600mAh
+    a bluetooth module, baud rate in 115200
 
-    12x JX Servo PDI-HV5932MG 30KG Large Torque 180°
+    a female-female dupoint wire
 	
-    4x M3 Adjustable Push Rod End Ball Joint Linkage
+    some m2x6, m2x10 tapping screws
 
-    4x 6900zz Ball Bearing 10x22x6mm
-
-    8x 626zz Ball Bearing 6x19x6mm
-
-    - various bolts & nuts
+    some M3x6,M3x14,M3x20 flat head screws and M3 nuts
 
 # Youtube Videos
-   https://youtu.be/9Ssk_ifbPBk
+   https://youtu.be/79Q_PA3Entk
 
-   https://youtu.be/xpSewWf5jvI
