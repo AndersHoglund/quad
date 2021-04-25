@@ -15,20 +15,58 @@
   // ## used to explain the measurement unit of a variable
   // !! used for warnings
 */
+
 #include "Config.hpp"
 #include "Buzzer.hpp"
 #include "Hardware.hpp"
 #include "Kinematics.hpp"
 #include "GoBLE.hpp"
 
+#ifdef USE_GOBLE_INPUT
 #ifdef __SOFTWARE_SERIAL__
 SoftwareSerial BlueTooth(BT_RX, BT_TX);
 _GoBLE<SoftwareSerial, HardwareSerial> Goble(BlueTooth, Console);
 #else
 _GoBLE<HardwareSerial, HardwareSerial> Goble(BlueTooth1, Console);
 #endif
+#endif
 
 
+#ifdef USE_SPEKTRUM_RX_INPUT
+
+#ifdef __SOFTWARE_SERIAL__
+SoftwareSerial serialRx(INPUT_PIN, OUTPUT_PIN); // RX, TX
+#endif
+
+// Spektrum channel order
+#define THRO 0
+#define AILE 1
+#define ELEV 2
+#define RUDD 3
+#define GEAR 4
+#define AUX1 5
+#define AUX2 6
+#define AUX3 7
+#define AUX4 8
+#define AUX5 9
+
+// Only available at 22ms frame rate, not at 11ms.
+#define AUX6 10
+#define AUX7 11
+
+// Only support DSMx SERIALRX_SPEKTRUM2048:
+#define SPEKTRUM_MAX_SUPPORTED_CHANNEL_COUNT 12
+#define SPEK_FRAME_SIZE                      16
+#define SPEK_CHAN_SHIFT                       3
+#define SPEK_CHAN_MASK                     0x07
+#define SPEKTRUM_NEEDED_FRAME_INTERVAL        5
+#define SPEKTRUM_BAUDRATE                115200
+
+// Ugly globals....
+unsigned long currentTime;
+
+#endif // USE_SPEKTRUM_RX_INPUT
+ 
 //
 Buzzer buzzer(BUZZER_PIN);
 Hardware hardware;
@@ -63,7 +101,14 @@ float lx, ly, rx, ry;
 void setup()
 {
   hardware.init_hardware();
+#ifdef USE_GOBLE_INPUT
   Goble.begin(GOBLE_BAUD_RATE);
+#endif
+
+#ifdef USE_SPEKTRUM_RX_INPUT
+  serialRx.begin(SPEKTRUM_BAUDRATE);
+#endif
+
 #ifdef __DEBUG__
   Console.begin(115200);
   Console.println("in debugging mode");
@@ -102,6 +147,8 @@ void loop()
     state = 1;
     goto __handle_input;
   }
+  
+#ifdef USE_GOBLE_INPUT
   //
   if (Goble.available()) {
     previousDuration = duration;
@@ -154,6 +201,75 @@ void loop()
     }
   }
   //
+#endif // USE_GOBLE_INPUT
+
+#ifdef USE_SPEKTRUM_RX_INPUT
+  static unsigned long lastSerialRxTime = 0;
+  static unsigned char spekFrame[SPEK_FRAME_SIZE];
+  static unsigned char spekFramePosition = 0;
+  static bool rcFrameComplete = false;
+
+  unsigned long spekChannelData[SPEKTRUM_MAX_SUPPORTED_CHANNEL_COUNT];
+
+  if (currentTime - lastSerialRxTime > SPEKTRUM_NEEDED_FRAME_INTERVAL)
+  {
+    spekFramePosition = 0;
+  }
+
+  if (spekFramePosition < SPEK_FRAME_SIZE && serialRx.available())
+  {
+    lastSerialRxTime = currentTime;
+
+    unsigned char c = serialRx.read();
+    spekFrame[spekFramePosition++] = c;
+    
+    if (spekFramePosition < SPEK_FRAME_SIZE)
+    {
+      rcFrameComplete = false;
+    }
+    else
+    {
+      rcFrameComplete = true;
+    }
+  }
+
+  if (rcFrameComplete)
+  {
+    rcFrameComplete = false;
+
+    // Get the RC control channel inputs
+    for (int b = 3; b < SPEK_FRAME_SIZE; b += 2)
+    {
+      const uint8_t spekChannel = 0x0F & (spekFrame[b - 1] >> SPEK_CHAN_SHIFT);
+
+      if (spekChannel < SPEKTRUM_MAX_SUPPORTED_CHANNEL_COUNT)
+      {
+        spekChannelData[spekChannel] = ((spekFrame[b - 1] & SPEK_CHAN_MASK) << 8) + spekFrame[b];
+      }
+    }
+    
+    switch (state)
+    {
+      case 1:
+        joystickLY = map(spekChannelData[THRO], 2047, 0, 127, -128); // DSMx 11 bit 2048 mode -> 8 bit mode 
+        joystickRX = map(spekChannelData[AILE], 2047, 0, 127, -128);
+        break;
+      case 0:
+      case 2:
+        joystickRY = map(spekChannelData[ELEV], 2047, 0, 127, -128);
+        joystickRX = map(spekChannelData[AILE], 2047, 0, 127, -128);
+        break;
+      case 3:
+        joystickLY = map(spekChannelData[THRO], 2047, 0, 127, -128);
+        joystickLX = map(spekChannelData[RUDD], 0, 2047, 127, -128);
+        break;
+      default:
+        joystickLX = 0; joystickLY = 0;
+        joystickRX = 0; joystickRY = 0;
+    }
+  }
+#endif // USE_SPEKTRUM_RX_INPUT
+
 __handle_input:
   handle_input();
   //
