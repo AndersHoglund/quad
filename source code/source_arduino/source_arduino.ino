@@ -66,7 +66,7 @@ SoftwareSerial serialRx(INPUT_PIN, OUTPUT_PIN); // RX, TX
 unsigned long currentTime;
 
 #endif // USE_SPEKTRUM_RX_INPUT
- 
+
 //
 Buzzer buzzer(BUZZER_PIN);
 Hardware hardware;
@@ -147,7 +147,7 @@ void loop()
     state = 1;
     goto __handle_input;
   }
-  
+
 #ifdef USE_GOBLE_INPUT
   //
   if (Goble.available()) {
@@ -222,7 +222,7 @@ void loop()
 
     unsigned char c = serialRx.read();
     spekFrame[spekFramePosition++] = c;
-    
+
     if (spekFramePosition < SPEK_FRAME_SIZE)
     {
       rcFrameComplete = false;
@@ -247,7 +247,7 @@ void loop()
         spekChannelData[spekChannel] = ((spekFrame[b - 1] & SPEK_CHAN_MASK) << 8) + spekFrame[b];
       }
     }
-    
+
     switch (state)
     {
       case 1:
