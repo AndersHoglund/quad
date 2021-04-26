@@ -94,7 +94,7 @@ unsigned long duration;
 //                sample_index;
 //float freq;
 
-//: handle input paramters
+//: handle input parameters
 float stick_min = 6.f;
 float lx, ly, rx, ry;
 
