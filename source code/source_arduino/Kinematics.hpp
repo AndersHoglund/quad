@@ -2,6 +2,7 @@
 #define __KINEMATICS__
 #include "datatypes.h"
 #include "Hardware.hpp"
+#include "Config.hpp"
 
 class Kinematics {
 
@@ -62,7 +63,12 @@ class Kinematics {
     const float frequency = 250; // ## Hz
 
     /// Kinematics Parameters
+#ifdef LEG_LEN
+    const float bone_length = LEG_LEN;
+#else
     const float bone_length = 105; // ## mm
+#endif
+
     //: stores the location, rotation and scale of the main [body]
     const datatypes::Transform body_transform = {
       {0, 0, 0},     // ## {mm, mm, mm}

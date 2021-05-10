@@ -16,9 +16,10 @@ class GPIOservo {
 #endif
     }
 
-    GPIOservo(int pinIndex, int min, int max ): GPIOservo(pinIndex) {
+    GPIOservo(int pinIndex, int min, int max, int trim ): GPIOservo(pinIndex) {
       gpioServoMin = min;
       gpioServoMax = max;
+      gpioServoCenterTrim = trim;
     }
 
     bool attach(uint8_t pinIndex) {
@@ -26,16 +27,18 @@ class GPIOservo {
       return attach();
     }
 
-    bool attach(int minPulse, int maxPulse ) {
+    bool attach(int minPulse, int maxPulse, int centerTrim ) {
       this->gpioServoMin = minPulse;
       this->gpioServoMax = maxPulse;
+      this->gpioServoCenterTrim = centerTrim;
       return attach();
     }
 
-    bool attach(uint8_t pinIndex, int minPulse, int maxPulse ) {
+    bool attach(uint8_t pinIndex, int minPulse, int maxPulse, int centerTrim ) {
       this->pinIndex = pinIndex;
       this->gpioServoMin = minPulse;
       this->gpioServoMax = maxPulse;
+      this->gpioServoCenterTrim = centerTrim;
       return attach();
     }
 
@@ -44,8 +47,9 @@ class GPIOservo {
       if (attached) {
         gpioServos.detach();
       }
+      int angleTrim = map(1500+gpioServoCenterTrim, gpioServoMin, gpioServoMax, 0, 180) - 90;
       gpioServos.attach(pinIndex, gpioServoMin, gpioServoMax);
-      gpioServos.write(angle);
+      gpioServos.write(angle + angleTrim);
       prevTime = millis();
       return attached = true;
     }
@@ -61,7 +65,8 @@ class GPIOservo {
       if (!attached) {
         return;
       }
-      gpioServos.write(angle);
+      int angleTrim = map(1500+gpioServoCenterTrim, gpioServoMin, gpioServoMax, 0, 180)- 90;
+      gpioServos.write(angle + angleTrim);
       if (angle != this->angle) this->angle = angle;
     }
 
@@ -71,7 +76,7 @@ class GPIOservo {
       }
       int deg = map(us, gpioServoMin, gpioServoMax, 0, 180);
       if (deg != this->angle) this->angle = deg;
-      gpioServos.writeMicroseconds(us);
+      gpioServos.writeMicroseconds(us + gpioServoCenterTrim);
     }
 
     int getAngle() {
@@ -124,6 +129,7 @@ class GPIOservo {
 
   private:
     int pinIndex;
+    int gpioServoCenterTrim = 0;
     int gpioServoMin = 550;
     int gpioServoMax = 2550;
     //const int gpioServoMax = 2350;

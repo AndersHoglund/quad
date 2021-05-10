@@ -97,7 +97,7 @@ void loop()
 
   //: test mode -  while A6 connects to 5V again;  walk in trot gait; stop after 1 min
   if (analogRead(SERVO_CAL_PIN) > 1000) {
-    joystickLY = 127;
+    joystickLY = 64;
     //joystickRX = 127;
     state = 1;
     goto __handle_input;

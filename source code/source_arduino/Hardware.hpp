@@ -25,8 +25,8 @@ class Hardware {
       {GPIOservo(10), GPIOservo(11), GPIOservo(7)}  // ## {shoulder chnl, upper chnl, lower chnl} robot's left back
     };
 
-    const int pulse_min = 550;
-    const int pulse_max = 2550;
+    const int pulse_min = SERVO_MIN_PULSE;
+    const int pulse_max = SERVO_MAX_PULSE;
 
     // ## pulse_max offset to adjust servo angle
     // ## tune value if legs are not balance equally.
@@ -35,6 +35,14 @@ class Hardware {
       {0, 0, 0},
       {0, 0, 0},
       {0, 0, 0}
+    };
+
+    // ## pulse center offset to subtrim servo center angle (us)
+    int s_offset_center[4][3] = {
+      {40, 125, -90},
+      {0,  -30, -40},
+      {0,   50, -20},
+      {50, -10, 100}
     };
 
     const int s_optinv[4][3] = {
@@ -53,6 +61,7 @@ class Hardware {
     const int left_back_leg = 3;
     //
     boolean attached = false;
+    const int legs[4] = {right_back_leg, left_back_leg, right_front_leg, left_front_leg};
   public:
     Hardware() {}
 
@@ -66,10 +75,9 @@ class Hardware {
 
     void attach() {
       if (attached) return;
-      int legs[] = {right_back_leg, left_back_leg, right_front_leg, left_front_leg};
       for (int joint = 0; joint < 3; joint++) {
         for (int i = 0; i < 4; i++) {
-          s_output[legs[i]][joint].attach(pulse_min, pulse_max + s_offset_max[legs[i]][joint]);
+          s_output[legs[i]][joint].attach(pulse_min, pulse_max + s_offset_max[legs[i]][joint], s_offset_center[legs[i]][joint]);
           delay(30);
         }
       }
@@ -98,7 +106,7 @@ class Hardware {
     void set_servo(int leg, int joint, float pulse)
     {
       GPIOservo  servo = s_output[leg][joint];
-      servo.write(map(pulse, pulse_min, pulse_max, 0, 180));
+      servo.write(map(pulse + s_offset_center[legs[leg]][joint], pulse_min, pulse_max, 0, 180));
     }
 
   private:
@@ -122,8 +130,9 @@ class Hardware {
       } else if (_inv == 1) {
         pulse = map(deg, _minC, _maxC, _max, _min);
       }
-      servo.writeMicroseconds(pulse);
+      servo.writeMicroseconds(pulse + s_offset_center[legs[leg]][joint]);
     }
+
     /*
       == == == == == == == == == == == == == == ==
       HARDWARE - MPU VARIABLES
