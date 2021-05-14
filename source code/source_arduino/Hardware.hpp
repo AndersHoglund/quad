@@ -39,10 +39,10 @@ class Hardware {
 
     // ## pulse center offset to subtrim servo center angle (us)
     int s_offset_center[4][3] = {
-      {40, 125, -90},
-      {0,  -30, -40},
-      {0,   50, -20},
-      {50, -10, 100}
+      { 90,  -70, -30},
+      {-70,  -90, -60},
+      { 60,  -20, -70},
+      {-10,  -20,  30}
     };
 
     const int s_optinv[4][3] = {
