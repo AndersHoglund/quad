@@ -46,10 +46,10 @@ class Hardware {
     };
 
     const int s_optinv[4][3] = {
-      {0, 0, 0}, // ## {dir, dir, dir}
-      {1, 0, 0}, // ## {dir, dir, dir}
-      {0, 1, 1}, // ## {dir, dir, dir}
-      {1, 1, 1}  // ## {dir, dir, dir}
+      {1, 0, 1}, // ## {dir, dir, dir}
+      {1, 0, 1}, // ## {dir, dir, dir}
+      {0, 1, 0}, // ## {dir, dir, dir}
+      {0, 1, 0}  // ## {dir, dir, dir}
     };
 
     const int d_constraint_min[3] { -70, 20, 40}; // ## {deg, deg, deg}
