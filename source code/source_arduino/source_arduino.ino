@@ -48,7 +48,7 @@ int8_t joystickLY = 0;
 int8_t joystickRX = 0;
 int8_t joystickRY = 0;
 
-datatypes::Rotator _sRotation; //> this variable stores the relative rotation of the body
+//datatypes::Rotator _sRotation; //> this variable stores the relative rotation of the body
 
 unsigned long duration;
 //
@@ -68,8 +68,28 @@ void setup()
   Console.begin(115200);
   Console.println("in debugging mode");
 #endif
+  while (analogRead(SERVO_CAL_PIN) > 1000)
+  {
   //: servo calibration mode - while A6 connects to 5V, all servos in 90° for servo arm adjustment.
-  while (analogRead(SERVO_CAL_PIN) > 1000)  delay(1000);
+
+//#define CENTER_SERVOS_HERE
+#ifdef CENTER_SERVOS_HERE
+// Servos are already centered by Hardware constructor, but do it again from here just to test
+
+    for (int i = 0; i < sizeof(pulse)/sizeof(pulse[0]); i++)
+    {
+      for (int leg = 0; leg < 4; leg++)
+      {
+        for (int joint = 0; joint < 4; joint++)
+        {
+          hardware.set_servo(leg,joint, SERVO_MID_PULSE);
+        }
+      }
+    }
+#endif
+
+  delay(2000);
+  }
 
   //
 #ifdef __DEBUG__

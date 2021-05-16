@@ -31,7 +31,11 @@ extern SoftwareSerial BlueTooth;
 #define LEG_WIDTH_TOP 47
 #define LEG_WIDTH_BOT 120
 
-#define SERVO_MIN_PULSE 1000
-#define SERVO_MAX_PULSE 2000
+#define SERVO_MIN_PULSE  600 //   0 degrees
+#define SERVO_MID_PULSE 1500 //  90
+#define SERVO_MAX_PULSE 2350 // 180
+
+#define SERVO_MIN_PULSE_ABS  580 // Absolute minimum, mechanical stop (ES09A/MA).
+#define SERVO_MAX_PULSE_ABS 2380 // Absolute maximum, mechanical stop.
 
 #endif //__CONFIG_

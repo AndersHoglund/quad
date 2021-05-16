@@ -39,10 +39,16 @@ class Hardware {
 
     // ## pulse center offset to subtrim servo center angle (us)
     int s_offset_center[4][3] = {
-      { 90,  -70, -30},
-      {-70,  -90, -60},
-      { 60,  -20, -70},
-      {-10,  -20,  30}
+      // Subtrim using A6 Calibration mode
+//      { 90,  -70, -30}, // RB
+//      {-70,  -90, -60}, // RF
+//      { 60,  -20, -70}, // LF
+//      {-10,  -20,  30}  // LB
+      // Subtrim using idle position. Do not understand why there is a diff....
+      { 20,    0, -10}, // RB
+      {-50,    0, -50}, // RF
+      { 60,  -20,   0}, // LF
+      { 40,  -20,  30}  // LB
     };
 
     const int s_optinv[4][3] = {
@@ -106,7 +112,7 @@ class Hardware {
     void set_servo(int leg, int joint, float pulse)
     {
       GPIOservo  servo = s_output[leg][joint];
-      servo.write(map(pulse + s_offset_center[legs[leg]][joint], pulse_min, pulse_max, 0, 180));
+      servo.writeMicroseconds(pulse + s_offset_center[leg][joint]);
     }
 
   private:
@@ -130,7 +136,7 @@ class Hardware {
       } else if (_inv == 1) {
         pulse = map(deg, _minC, _maxC, _max, _min);
       }
-      servo.writeMicroseconds(pulse + s_offset_center[legs[leg]][joint]);
+      servo.writeMicroseconds(pulse + s_offset_center[leg][joint]);
     }
 
     /*

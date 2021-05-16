@@ -65,7 +65,7 @@ class GPIOservo {
       if (!attached) {
         return;
       }
-      int angleTrim = map(1500+gpioServoCenterTrim, gpioServoMin, gpioServoMax, 0, 180)- 90;
+      int angleTrim = map(1500 + gpioServoCenterTrim, gpioServoMin, gpioServoMax, 0, 180)- 90;
       gpioServos.write(angle + angleTrim);
       if (angle != this->angle) this->angle = angle;
     }
