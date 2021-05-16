@@ -41,7 +41,7 @@ float turn = 0;   //> indicates the direction of rotation
 float height = 0; //> indicates the leg extension
 
 int state = 0;        //> indicates the type of gait, (0) idle, (1) trot, (2) yaw, (3) pitch-roll, (4) object-detection
-float _period = 10.0; //> indicates the number of steps every second
+float _period = 5.0; //> indicates the number of steps every second
 
 int8_t joystickLX = 0;
 int8_t joystickLY = 0;
