@@ -83,7 +83,7 @@ class Kinematics {
       { -50, 0, 0} // ## {mm, mm, mm}
     };
     //: high level parameters for the step function
-    const datatypes::Vector step_extent = {20, 20, 26}; // ## {mm, mm}
+    const datatypes::Vector step_extent = {20, 20, 20}; // ## {mm, mm}
 };
 
 
