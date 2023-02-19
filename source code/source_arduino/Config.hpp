@@ -1,6 +1,7 @@
 #ifndef __CONFIG__
 #define __CONFIG__
 
+//#define TRACEPRINT
 //#define __DEBUG__
 //#define __SOFTWARE_SERIAL__
 //
