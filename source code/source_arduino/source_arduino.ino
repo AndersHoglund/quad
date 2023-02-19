@@ -15,10 +15,13 @@
   // ## used to explain the measurement unit of a variable
   // !! used for warnings
 */
+
 #include "Config.hpp"
 #include "Buzzer.hpp"
 #include "Hardware.hpp"
 #include "Kinematics.hpp"
+
+#ifdef USE_GOBLE_INPUT
 #include "GoBLE.hpp"
 
 #ifdef __SOFTWARE_SERIAL__
@@ -27,7 +30,24 @@ _GoBLE<SoftwareSerial, HardwareSerial> Goble(BlueTooth, Console);
 #else
 _GoBLE<HardwareSerial, HardwareSerial> Goble(BlueTooth1, Console);
 #endif
+#endif
 
+
+#ifdef USE_SPEKTRUM_RX_INPUT
+#include "spektrum.h"
+
+#ifdef __SOFTWARE_SERIAL__
+SoftwareSerial serialRx(INPUT_PIN, OUTPUT_PIN); // RX, TX
+#endif
+
+unsigned long lastSerialRxTime = 0;
+unsigned char spekFrame[SPEK_FRAME_SIZE];
+unsigned char spekFramePosition = 0;
+bool rcFrameComplete = false;
+long spekChannelData[SPEKTRUM_MAX_SUPPORTED_CHANNEL_COUNT];
+unsigned long currentTime;
+
+#endif // USE_SPEKTRUM_RX_INPUT
 
 //
 Buzzer buzzer(BUZZER_PIN);
@@ -56,14 +76,24 @@ unsigned long duration;
 //                sample_index;
 //float freq;
 
-//: handle input paramters
+//: handle input parameters
 float stick_min = 6.f;
 float lx, ly, rx, ry;
 
 void setup()
 {
   hardware.init_hardware();
+#ifdef USE_GOBLE_INPUT
   Goble.begin(GOBLE_BAUD_RATE);
+#endif
+
+#ifdef USE_SPEKTRUM_RX_INPUT
+#ifdef __SOFTWARE_SERIAL__
+  pinMode(INPUT_PIN, INPUT);
+#endif
+  serialRx.begin(SPEKTRUM_BAUDRATE);
+#endif
+
 #ifdef __DEBUG__
   Console.begin(115200);
   Console.println("in debugging mode");
@@ -95,6 +125,9 @@ void setup()
 #ifdef __DEBUG__
   Console.println("started");
 #endif
+#ifdef TRACEPRINT
+  Console.println("started");
+#endif
   buzzer.beepShort();
 }
 
@@ -120,8 +153,10 @@ void loop()
     joystickLY = 64;
     //joystickRX = 127;
     state = 1;
-    goto __handle_input;
+    handle_input();
   }
+  else {
+#ifdef USE_GOBLE_INPUT
   //
   if (Goble.available()) {
     previousDuration = duration;
@@ -174,9 +209,97 @@ void loop()
     }
   }
   //
-__handle_input:
   handle_input();
   //
+#endif // USE_GOBLE_INPUT
+
+#ifdef USE_SPEKTRUM_RX_INPUT
+
+  currentTime = millis();
+
+  if (currentTime - lastSerialRxTime > SPEKTRUM_NEEDED_FRAME_INTERVAL)
+  {
+    spekFramePosition = 0;
+    rcFrameComplete = false;
+  }
+
+  while (spekFramePosition < SPEK_FRAME_SIZE && serialRx.available() > 0)
+  {
+    lastSerialRxTime = currentTime;
+
+    unsigned char c = serialRx.read();
+    spekFrame[spekFramePosition++] = c;
+    if (spekFramePosition < SPEK_FRAME_SIZE)
+    {
+      rcFrameComplete = false;
+    }
+    else
+    {
+      spekFramePosition = 0;
+      rcFrameComplete = true;
+    }
+  }
+
+  if (rcFrameComplete)
+  {
+    previousDuration = duration;
+    rcFrameComplete = false;
+
+    // Get the RC control channel inputs
+    for (int b = 3; b < SPEK_FRAME_SIZE; b += 2)
+    {
+      const uint8_t spekChannel = 0x0F & (spekFrame[b - 1] >> SPEK_CHAN_SHIFT);
+
+      if (spekChannel < SPEKTRUM_MAX_SUPPORTED_CHANNEL_COUNT)
+      {
+        spekChannelData[spekChannel] = ((spekFrame[b - 1] & SPEK_CHAN_MASK) << 8) + spekFrame[b];
+      }
+    }
+
+    int stateChannel = AUX1;
+    unsigned int stateSwitch = 988 + (spekChannelData[stateChannel]/2); 
+    //unsigned int stateSwitch = map(spekChannelData[stateChannel]/2, 0, 1023, 988, 2200 );
+    if ((stateSwitch < 1100) && (state != 0)) // RM TX16S 6pos switch (MM output) ~= 988 (1090)
+    {
+      state = 0;
+      buzzer.beepShort();
+    }
+    else if ((stateSwitch > 1100) && (stateSwitch < 1350) && (state != 1)) // 1193 (1254)
+    {
+      state = 1;
+      buzzer.beepShort();
+    }
+    else if ((stateSwitch > 1350) && (stateSwitch < 1550) && (state != 2)) // 1398 (1418)
+    {
+      state = 2;
+      buzzer.beepShort();
+    }
+    else if ((stateSwitch > 1550) && (stateSwitch < 1700) && (state != 3)) // 1602 (1581)
+    {
+      state = 3;
+      buzzer.beepShort();
+    }
+    else if ((stateSwitch > 1700) && (stateSwitch < 1800) && (state != 4)) // 1807 (1745)
+    {
+      state = 4;
+      buzzer.beepShort();
+    }
+//    else if ((stateSwitch > 1800) && (stateSwitch < 2100) && (state != 5)) // 2011 (1909)
+//    {
+//      state = 5;
+//      buzzer.beepShort();
+//    }
+
+//    Console.println("spekChannelData[stateChannel]/2: " + String(spekChannelData[stateChannel]>>1) + ", stateSwitch: " + String(stateSwitch) + ", state: " + String(state));
+
+    joystickLY = map(spekChannelData[THRO], 2047, 0, 127, -128); // DSMx 11 bit 2048 mode -> 8 bit mode
+    joystickLX = map(spekChannelData[RUDD], 2047, 0, 127, -128);
+    joystickRY = map(spekChannelData[ELEV], 2047, 0, 127, -128);
+    joystickRX = map(spekChannelData[AILE], 2047, 0, 127, -128);
+    handle_input();
+  }
+#endif // USE_SPEKTRUM_RX_INPUT
+  } // Test mode
 #ifdef __DEBUG__
   if (Console.available())
     handle_serial();
@@ -198,9 +321,10 @@ void handle_input()
   ly = Kinematics::inter(ly, joystickLY / 4.f, 0.5f); //> gets the interpolated y-position of the left  analog stick
   rx = Kinematics::inter(rx, joystickRX / 4.f, 0.5f); //> gets the interpolated x-position of the right analog stick
   ry = Kinematics::inter(ry, joystickRY / 4.f, 0.5f); //> gets the interpolated y-position of the right analog stick
-  //Console.println("joystickLY: " + String(joystickLY) + ", ly: " + String(ly));
-  //Console.println("joystickRX: " + String(joystickRX) + ", rx: " + String(rx));
-  //Console.println("joystickRY: " + String(joystickRY) + ", ry: " + String(ry));
+//  Console.println("joystickLX: " + String(joystickLX) + ", lx: " + String(lx));
+//  Console.println("joystickLY: " + String(joystickLY) + ", ly: " + String(ly));
+//  Console.println("joystickRX: " + String(joystickRX) + ", rx: " + String(rx));
+//  Console.println("joystickRY: " + String(joystickRY) + ", ry: " + String(ry));
   if (abs(lx) > stick_min)
   { //> checks whether the stick position is out of the deadzone
     float x0 = lx - stick_min * Kinematics::sign(lx); //> subtracts the deadzone
