@@ -106,8 +106,6 @@ void setup()
 #ifdef CENTER_SERVOS_HERE
 // Servos are already centered by Hardware constructor, but do it again from here just to test
 
-    for (int i = 0; i < sizeof(pulse)/sizeof(pulse[0]); i++)
-    {
       for (int leg = 0; leg < 4; leg++)
       {
         for (int joint = 0; joint < 4; joint++)
@@ -115,7 +113,6 @@ void setup()
           hardware.set_servo(leg,joint, SERVO_MID_PULSE);
         }
       }
-    }
 #endif
 
   delay(2000);
@@ -160,7 +157,6 @@ void loop()
   //
   if (Goble.available()) {
     previousDuration = duration;
-    hardware.attach(); // turn on servos if they are off
     switch (state) {
       case 1:
         joystickLY = map(Goble.readJoystickY(), 255, 0, 127, -128);

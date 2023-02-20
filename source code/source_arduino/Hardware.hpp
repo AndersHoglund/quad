@@ -18,7 +18,7 @@ class Hardware {
       HARDWARE - SERVO PARAMETERS
       ==============================
     */
-    GPIOservo s_output[4][3] = {
+    GPIOservo servo[4][3] = {
       {GPIOservo(12), GPIOservo(13), GPIOservo(5)}, // ## {shoulder chnl, upper chnl, lower chnl} robot's right back
       {GPIOservo(2), GPIOservo(3), GPIOservo(4)},   // ## {shoulder chnl, upper chnl, lower chnl} robot's right front
       {GPIOservo(9), GPIOservo(8), GPIOservo(6)},   // ## {shoulder chnl, upper chnl, lower chnl} robot's left front
@@ -39,17 +39,12 @@ class Hardware {
 
     // ## pulse center offset to subtrim servo center angle (us)
     int s_offset_center[4][3] = {
-      // Subtrim using A6 Calibration mode
-//      { 90,  -70, -30}, // RB
-//      {-70,  -90, -60}, // RF
-//      { 60,  -20, -70}, // LF
-//      {-10,  -20,  30}  // LB
-      // Subtrim using idle position. Do not understand why there is a diff....
-      { 20,    0, -10}, // RB
-      {-50,    0, -50}, // RF
-      { 60,  -20,   0}, // LF
-      { 40,  -20,  30}  // LB
-    };
+      // Good Subtrim using A6 Calibration mode
+      { 40,  -70, -50}, // RB Shoulder Elbow Wrist
+      {-90,  -80, -90}, // RF
+      { 30,  -70, -70}, // LF
+      {-20,  -40,  10}  // LB
+     };
 
     const int s_optinv[4][3] = {
       {1, 0, 1}, // ## {dir, dir, dir}
@@ -83,7 +78,7 @@ class Hardware {
       if (attached) return;
       for (int joint = 0; joint < 3; joint++) {
         for (int i = 0; i < 4; i++) {
-          s_output[legs[i]][joint].attach(pulse_min, pulse_max + s_offset_max[legs[i]][joint], s_offset_center[legs[i]][joint]);
+          servo[legs[i]][joint].attach(pulse_min, pulse_max + s_offset_max[legs[i]][joint], s_offset_center[legs[i]][joint]);
           delay(30);
         }
       }
@@ -94,7 +89,7 @@ class Hardware {
       if (!attached)  return;
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 3; j++) {
-          s_output[i][j].detach();
+          servo[i][j].detach();
         }
       }
       attached = false;
@@ -111,8 +106,7 @@ class Hardware {
 
     void set_servo(int leg, int joint, float pulse)
     {
-      GPIOservo  servo = s_output[leg][joint];
-      servo.writeMicroseconds(pulse + s_offset_center[leg][joint]);
+      servo[leg][joint].writeMicroseconds(pulse);
     }
 
   private:
@@ -129,15 +123,14 @@ class Hardware {
       else if (deg > _maxC)
         deg = _maxC;
 
-      GPIOservo  servo = s_output[leg][joint];
       float pulse;
       if (_inv == 0) {
         pulse = map(deg, _minC, _maxC, _min, _max);
       } else if (_inv == 1) {
         pulse = map(deg, _minC, _maxC, _max, _min);
       }
-      servo.writeMicroseconds(pulse + s_offset_center[leg][joint]);
-    }
+      servo[leg][joint].writeMicroseconds(pulse);
+}
 
     /*
       == == == == == == == == == == == == == == ==
@@ -208,10 +201,10 @@ class Hardware {
         }*/
     }
 #if defined(__DEBUG__)
-    void testGPIOs_output() {
+    void testGPIOservo() {
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 3; j++) {
-          s_output[i][j].sweep();
+          servo[i][j].sweep();
         }
       }
     }
