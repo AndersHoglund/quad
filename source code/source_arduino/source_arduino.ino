@@ -98,26 +98,7 @@ void setup()
   Console.begin(115200);
   Console.println("in debugging mode");
 #endif
-  while (analogRead(SERVO_CAL_PIN) > 1000)
-  {
-  //: servo calibration mode - while A6 connects to 5V, all servos in 90° for servo arm adjustment.
-
-//#define CENTER_SERVOS_HERE
-#ifdef CENTER_SERVOS_HERE
-// Servos are already centered by Hardware constructor, but do it again from here just to test
-
-      for (int leg = 0; leg < 4; leg++)
-      {
-        for (int joint = 0; joint < 4; joint++)
-        {
-          hardware.set_servo(leg,joint, SERVO_MID_PULSE);
-        }
-      }
-#endif
-
-  delay(2000);
-  }
-
+  calibrateServoCenter();
   //
 #ifdef __DEBUG__
   Console.println("started");
@@ -280,11 +261,12 @@ void loop()
       state = 4;
       buzzer.beepShort();
     }
-//    else if ((stateSwitch > 1800) && (stateSwitch < 2100) && (state != 5)) // 2011 (1909)
-//    {
-//      state = 5;
-//      buzzer.beepShort();
-//    }
+    else if ((stateSwitch > 1800) && (stateSwitch < 2100) && (state != 5)) // 2011 (1909)
+    {
+      state = 5;
+      buzzer.beepShort();
+      calibrateServoCenter();
+    }
 
 //    Console.println("spekChannelData[stateChannel]/2: " + String(spekChannelData[stateChannel]>>1) + ", stateSwitch: " + String(stateSwitch) + ", state: " + String(state));
 
@@ -300,6 +282,22 @@ void loop()
   if (Console.available())
     handle_serial();
 #endif
+}
+
+void calibrateServoCenter()
+{
+  while (analogRead(SERVO_CAL_PIN) > 1000 || state == 5)
+  {
+    // servo calibration mode - while A6 connects to 5V, all servos in 90° for servo arm adjustment.
+    for (int leg = 0; leg < 4; leg++)
+    {
+      for (int joint = 0; joint < 4; joint++)
+      {
+        hardware.set_servo(leg,joint, SERVO_MID_PULSE);
+      }
+    }
+  delay(2000);
+  }
 }
 
 inline void aborted()

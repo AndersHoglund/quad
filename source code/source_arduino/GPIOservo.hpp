@@ -64,7 +64,7 @@ class GPIOservo {
     void write(int angle) {
       if (attached)
       {
-        int angleTrim = map(1500 + this-> , gpioServoMin, gpioServoMax, 0, 180)- 90;
+        int angleTrim = map(1500 + this->gpioServoCenterTrim , gpioServoMin, gpioServoMax, 0, 180)- 90;
         gpioServo.write(angle + angleTrim);
         this->angle = angle;
       }
