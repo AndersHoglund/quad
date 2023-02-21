@@ -68,7 +68,7 @@ int8_t joystickLY = 0;
 int8_t joystickRX = 0;
 int8_t joystickRY = 0;
 
-//datatypes::Rotator _sRotation; //> this variable stores the relative rotation of the body
+datatypes::Rotator _sRotation; //> this variable stores the relative rotation of the body
 
 unsigned long duration;
 //
@@ -291,10 +291,14 @@ void calibrateServoCenter()
     // servo calibration mode - while A6 connects to 5V, all servos in 90° for servo arm adjustment.
     for (int leg = 0; leg < 4; leg++)
     {
-      for (int joint = 0; joint < 4; joint++)
-      {
-        hardware.set_servo(leg,joint, SERVO_MID_PULSE);
-      }
+//      _sRotation = {0,65,90}; // Close to a Cal position,weird numbers...???
+      _sRotation = {0,45,90}; // Idle position
+      hardware.set_leg(leg, _sRotation);
+
+//      for (int joint = 0; joint < 4; joint++)
+//      {
+//        hardware.set_servo(leg,joint, SERVO_MID_PULSE);
+//      }
     }
   delay(2000);
   }

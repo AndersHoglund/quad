@@ -113,7 +113,7 @@ class Hardware {
     void set_joint(int leg, int joint, float deg)
     {
       int _min = pulse_min;
-      int _max = pulse_max + s_offset_max[leg][joint];
+      int _max = pulse_max;
       int _inv = s_optinv[leg][joint];
       int _minC = d_constraint_min[joint];
       int _maxC = d_constraint_max[joint];

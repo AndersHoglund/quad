@@ -31,15 +31,13 @@ class GPIOservo {
       this->gpioServoMin = minPulse;
       this->gpioServoMax = maxPulse;
       this->gpioServoCenterTrim = centerTrim;
+      this->angleTrim = map(1500 + centerTrim , minPulse + centerTrim, maxPulse + centerTrim, 0, 180)- 90;
       return attach();
     }
 
     bool attach(uint8_t pinIndex, int minPulse, int maxPulse, int centerTrim ) {
       this->pinIndex = pinIndex;
-      this->gpioServoMin = minPulse;
-      this->gpioServoMax = maxPulse;
-      this->gpioServoCenterTrim = centerTrim;
-      return attach();
+      return attach(minPulse, maxPulse, centerTrim);
     }
 
     bool attach() {
@@ -64,7 +62,6 @@ class GPIOservo {
     void write(int angle) {
       if (attached)
       {
-        int angleTrim = map(1500 + this->gpioServoCenterTrim , gpioServoMin, gpioServoMax, 0, 180)- 90;
         gpioServo.write(angle + angleTrim);
         this->angle = angle;
       }
@@ -73,7 +70,7 @@ class GPIOservo {
     void writeMicroseconds(long us) {
       if (attached) 
       {
-        gpioServo.writeMicroseconds(us + this->gpioServoCenterTrim);
+        gpioServo.writeMicroseconds(us + gpioServoCenterTrim);
       }
     }
 
@@ -131,6 +128,7 @@ class GPIOservo {
     int gpioServoMin = 550;
     int gpioServoMax = 2550;
     //const int gpioServoMax = 2350;
+    int angleTrim = 0;
     Servo gpioServo;
     //
     const short angleTimeGap = 5;
