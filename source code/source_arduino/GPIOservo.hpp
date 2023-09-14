@@ -131,7 +131,7 @@ class GPIOservo {
     int angleTrim = 0;
     Servo gpioServo;
     //
-    const short angleTimeGap = 5;
+    const short angleTimeGap =5;
     int angle;
     bool rev;
     long prevTime, currentTime;

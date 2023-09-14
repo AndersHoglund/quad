@@ -40,10 +40,10 @@ class Hardware {
     // ## pulse center offset to subtrim servo center angle (us)
     int s_offset_center[4][3] = {
       // Good Subtrim using A6 Calibration mode
-      { 40,  -70, -50}, // RB Shoulder Elbow Wrist
-      {-90,  -80, -90}, // RF
-      { 30,  -70, -70}, // LF
-      {-20,  -40,  10}  // LB
+      {  40,    0, -50}, // RB Shoulder Elbow Wrist
+      {-110,    0, -90}, // RF
+      {  90,  -70, -70}, // LF
+      {  30,  -40,  40}  // LB
      };
 
     const int s_optinv[4][3] = {
