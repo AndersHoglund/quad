@@ -234,34 +234,33 @@ void loop()
     }
 
     int stateChannel = AUX1;
-    unsigned int stateSwitch = 988 + (spekChannelData[stateChannel]/2); 
-    //unsigned int stateSwitch = map(spekChannelData[stateChannel]/2, 0, 1023, 988, 2200 );
-    if ((stateSwitch < 1100) && (state != 0)) // RM TX16S 6pos switch (MM output) ~= 988 (1090)
+    unsigned int stateSwitch = map(spekChannelData[stateChannel], 0, 2047, 988, 2012 );
+    if ((stateSwitch < 1100) && (state != 0)) // RM TX16S 6pos switch (MM output) ~= 988
     {
       state = 0;
       buzzer.beepShort();
     }
-    else if ((stateSwitch > 1100) && (stateSwitch < 1350) && (state != 1)) // 1193 (1254)
+    else if ((stateSwitch > 1100) && (stateSwitch < 1350) && (state != 1)) // 1193
     {
       state = 1;
       buzzer.beepShort();
     }
-    else if ((stateSwitch > 1350) && (stateSwitch < 1550) && (state != 2)) // 1398 (1418)
+    else if ((stateSwitch > 1350) && (stateSwitch < 1550) && (state != 2)) // 1398
     {
       state = 2;
       buzzer.beepShort();
     }
-    else if ((stateSwitch > 1550) && (stateSwitch < 1700) && (state != 3)) // 1602 (1581)
+    else if ((stateSwitch > 1550) && (stateSwitch < 1700) && (state != 3)) // 1602
     {
       state = 3;
       buzzer.beepShort();
     }
-    else if ((stateSwitch > 1700) && (stateSwitch < 1800) && (state != 4)) // 1807 (1745)
+    else if ((stateSwitch > 1700) && (stateSwitch < 1800) && (state != 4)) // 1807
     {
       state = 4;
       buzzer.beepShort();
     }
-    else if ((stateSwitch > 1800) && (stateSwitch < 2100) && (state != 5)) // 2011 (1909)
+    else if ((stateSwitch > 1800) && (stateSwitch < 2100) && (state != 5)) // 2012
     {
       state = 5;
       buzzer.beepShort();
