@@ -31,7 +31,7 @@ extern SoftwareSerial SerialRX;
 #else
 #define serialRx Serial
 #endif
-#endif // USE_GOBLE_INPUT
+#endif // USE_SPEKTRUM_RX_INPUT
 
 
 #define Console Serial
